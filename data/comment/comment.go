@@ -5,5 +5,5 @@ type Comment struct {
 	ID 		int		`json:"id"`
 	Name 	string	`json:"name"`
 	Email 	string	`json:"email"`
-	body 	string	`json:"body"`
+	Body 	string	`json:"body"`
 }
