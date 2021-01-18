@@ -3,11 +3,11 @@ package application
 import (
 	"NixTwo/data/comment"
 	"encoding/json"
-	"net/http"
 	"fmt"
+	"net/http"
 )
 
-func (pa *parseApp) getComments(postID int)  {
+func (pa *parseApp) getComments(postID int) {
 	defer pa.wg.Done()
 	url := pa.getCommentsSourceString(postID)
 	requestComment, err := http.Get(url)
@@ -23,8 +23,11 @@ func (pa *parseApp) getComments(postID int)  {
 		return
 	}
 	for _, comm := range commentsArray {
-		//Todo: logic of saving comments
-		fmt.Println(comm.Body)
+		pa.wg.Add(1)
+		obj := comm
+		go func() {
+			obj.Save()
+			pa.wg.Done()
+		}()
 	}
-	pa.wg.Done()
 }
