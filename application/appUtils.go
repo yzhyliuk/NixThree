@@ -1,6 +1,11 @@
 package application
 
-import "fmt"
+import (
+	"NixTwo/data/comment"
+	"NixTwo/data/post"
+	"NixTwo/dataSources/mysql"
+	"fmt"
+)
 
 //getPostSourceString : returns source URL string for posts of user with given ID
 func (pa *parseApp) getPostSourceString(userID int) string{
@@ -9,7 +14,23 @@ func (pa *parseApp) getPostSourceString(userID int) string{
 
 //getCommentsSourceString : returns source URL string for comments to post with given ID
 func (pa *parseApp) getCommentsSourceString(postID int) string{
-	return fmt.Sprintf("%s/comments?userId=%d",pa.sourceUrl, postID)
+	return fmt.Sprintf("%s/comments?postId=%d",pa.sourceUrl, postID)
+}
+
+func dbsetup() {
+	err := mysql.InitDBConnection("blogbase")
+	if err != nil {
+		fmt.Println("Can't connect to database")
+		return
+	}
+	err = mysql.DataBase.AutoMigrate(&post.Post{})
+	if err != nil {
+		fmt.Println(err.Error())
+	}
+	err = mysql.DataBase.AutoMigrate(&comment.Comment{})
+	if err != nil {
+		fmt.Println(err.Error())
+	}
 }
 
 
