@@ -102,24 +102,6 @@ func (w *webApp) createPost(rw http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (w *webApp) updatePost(rw http.ResponseWriter, r *http.Request) {
-	if r.Method == http.MethodPut {
-
-	} else {
-		rw.WriteHeader(http.StatusMethodNotAllowed)
-		return
-	}
-}
-
-func (w *webApp) deletePost(rw http.ResponseWriter, r *http.Request) {
-	if r.Method == http.MethodDelete {
-
-	} else {
-		rw.WriteHeader(http.StatusMethodNotAllowed)
-		return
-	}
-}
-
 //handler that returns XML or JSON presentation of data depending of Content-type of request
 func (w *webApp) returnHandler(rw http.ResponseWriter, r *http.Request) {
 	//getting object from context
