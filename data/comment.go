@@ -1,10 +1,5 @@
 package data
 
-import (
-	"NixTwo/dataSources/mysql"
-	"fmt"
-)
-
 var (
 	dbname = "blogbase"
 )
@@ -17,10 +12,18 @@ type Comment struct {
 	Body   string `json:"body"`
 }
 
-//Save : saves post to database
-func (c Comment) Save() {
-	result := mysql.DataBase.Create(&c)
-	if result.Error != nil {
-		fmt.Println("Can't add an post to database")
+//Merge : merge current post with another, filling empty fields
+func (p *Comment) Merge(merge *Comment) {
+	if p.Body == "" {
+		p.Body = merge.Body
+	}
+	if p.Name == "" {
+		p.Name = merge.Name
+	}
+	if p.Email == "" {
+		p.Email = merge.Email
+	}
+	if p.PostID == 0 {
+		p.PostID = merge.PostID
 	}
 }

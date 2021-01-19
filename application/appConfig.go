@@ -62,4 +62,6 @@ func dbDefaultConfig() (*gorm.DB, error) {
 func (w *webApp) mapRoutes() {
 	w.webRouter.HandleFunc("/posts/", w.Post)
 	w.webRouter.HandleFunc("/posts", w.createPost)
+	w.webRouter.HandleFunc("/comments/", w.Comment)
+	w.webRouter.HandleFunc("/comments", w.createComment)
 }
