@@ -9,7 +9,7 @@ import (
 
 type keyObj struct{}
 
-func (w *webApp) getPost(rw http.ResponseWriter, r *http.Request) {
+func (w *webApp) Post(rw http.ResponseWriter, r *http.Request) {
 	//getting id from path URL
 	id := getID(r.URL.String(), "/posts/")
 	if id <= 0 {
@@ -82,7 +82,20 @@ func (w *webApp) getPost(rw http.ResponseWriter, r *http.Request) {
 
 func (w *webApp) createPost(rw http.ResponseWriter, r *http.Request) {
 	if r.Method == http.MethodPost {
-
+		obj := new(data.Post)
+		err := parseObj(obj, rw, r)
+		if err != nil {
+			rw.WriteHeader(http.StatusBadRequest)
+			rw.Write([]byte("Can't parse Post from request body"))
+			return
+		}
+		err = w.generalService.Create(obj)
+		if err != nil {
+			rw.WriteHeader(http.StatusInternalServerError)
+			msg := fmt.Sprintf("Uable to create new Post: %s", err.Error())
+			rw.Write([]byte(msg))
+			return
+		}
 	} else {
 		rw.WriteHeader(http.StatusMethodNotAllowed)
 		return
