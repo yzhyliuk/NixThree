@@ -1,31 +1,59 @@
 package application
 
-import "sync"
+import (
+	"NixTwo/services"
+	"context"
+	"net/http"
+	"os"
+	"os/signal"
+	"time"
+
+	"gorm.io/gorm"
+)
 
 //App : exported interface for starting an application
 type App interface {
-	Start() error
+	Start()
 }
 
-//parseApp : internal type that implements App interface
-type parseApp struct {
-	sourceUrl string
-	//global wait group for all goroutines in the app
-	wg sync.WaitGroup
+type webApp struct {
+	dataSource     *gorm.DB
+	webServer      *http.Server
+	webRouter      *http.ServeMux
+	generalService services.Service
 }
 
-//InitApp : initialize an new Application returning an App interface instance
-func InitApp(sourceUrl string) App {
-	app := new(parseApp)
-	app.sourceUrl = sourceUrl
-	return app
+//Start : start function for server
+func (w *webApp) Start() {
+	go func() {
+		w.webServer.ErrorLog.Printf("Starting server on port %s \n", w.webServer.Addr)
+		err := w.webServer.ListenAndServe()
+		if err != nil {
+			w.webServer.ErrorLog.Printf("Error starting server: %s", err.Error())
+			os.Exit(1)
+		}
+	}()
+	//Create channel to communicate with os catching terminate commands
+	signChan := make(chan os.Signal)
+	signal.Notify(signChan, os.Kill)
+	signal.Notify(signChan, os.Interrupt)
+
+	//Block next part of code via wating response from channel
+	_ = <-signChan
+	//if recieving one - log command and Gracefully shutDown the Server with Timeout of 30 sec
+	w.webServer.ErrorLog.Printf("Recived terminate command, graceful shutdown")
+
+	tc, _ := context.WithTimeout(context.Background(), 30*time.Second)
+	w.webServer.Shutdown(tc)
+
 }
 
-//Start : starts new Application that parses comments and posts
-func (pa *parseApp) Start() error {
-	dbsetup()
-	pa.getPostByUserID(7)
-	//waiting for all goroutines to finish
-	pa.wg.Wait()
-	return nil
+//NewApp : returns an new App interface with default settings
+func NewApp() (App, error) {
+	//creating new webApp with default config
+	app, err := defaultConfig()
+	if err != nil {
+		return nil, err
+	}
+	return app, nil
 }

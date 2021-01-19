@@ -1,8 +1,16 @@
 package main
 
-import "NixTwo/application"
+import (
+	"NixTwo/application"
+	"fmt"
+)
+
+//import "NixTwo/application"
 
 func main() {
-	App := application.InitApp("https://jsonplaceholder.typicode.com")
-	App.Start()
+	app, err := application.NewApp()
+	if err != nil {
+		fmt.Printf(err.Error())
+	}
+	app.Start()
 }

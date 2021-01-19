@@ -1,4 +1,4 @@
-package post
+package data
 
 import (
 	"NixTwo/dataSources/mysql"
@@ -9,17 +9,17 @@ var (
 	dbname = "blogbase"
 )
 
-//Post : struct that represents Post
-type Post struct {
-	UserID int    `json:"userId"`
+type Comment struct {
+	PostID int    `json:"postId"`
 	ID     int    `json:"id" gorm:"primaryKey"`
-	Title  string `json:"title"`
+	Name   string `json:"name"`
+	Email  string `json:"email"`
 	Body   string `json:"body"`
 }
 
 //Save : saves post to database
-func (p *Post) Save() {
-	result := mysql.DataBase.Create(&p)
+func (c Comment) Save() {
+	result := mysql.DataBase.Create(&c)
 	if result.Error != nil {
 		fmt.Println("Can't add an post to database")
 	}
