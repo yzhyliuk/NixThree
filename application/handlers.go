@@ -2,17 +2,24 @@ package application
 
 import (
 	"NixTwo/data"
+	"context"
 	"net/http"
 )
 
+type keyObj struct{}
+
 func (w *webApp) getPost(rw http.ResponseWriter, r *http.Request) {
-	if r.Method == http.MethodGet {
-		id := getID(r.URL.String(), "/posts/")
-		if id <= 0 {
-			rw.WriteHeader(http.StatusBadRequest)
-			rw.Write([]byte("Path parameter 'id' should be more than 0"))
-			return
-		}
+	//getting id from path URL
+	id := getID(r.URL.String(), "/posts/")
+	if id <= 0 {
+		rw.WriteHeader(http.StatusBadRequest)
+		rw.Write([]byte("Path parameter 'id' should be more than 0"))
+		return
+	}
+	//Switch statment for get and delete methods
+	switch r.Method {
+	//Hndling Get request
+	case http.MethodGet:
 		pstEx := new(data.Post)
 		post, err := w.generalService.Recive(pstEx, id)
 		if err != nil {
@@ -20,22 +27,24 @@ func (w *webApp) getPost(rw http.ResponseWriter, r *http.Request) {
 			rw.Write([]byte(err.Error()))
 			return
 		}
-		switch r.Header.Get("Content-Type") {
-		case "application/xml":
-			returnXML(rw, post)
-			break
-		case "application/json":
-			returnJSON(rw, post)
-			break
-		default:
-			rw.WriteHeader(http.StatusBadRequest)
-			rw.Write([]byte("Request Content-Type should be application/xml or application/json"))
+		newContext := context.WithValue(r.Context(), keyObj{}, post)
+		r = r.WithContext(newContext)
+		w.returnHandler(rw, r)
+		break
+	//Handling Delete request
+	case http.MethodDelete:
+		pstEx := new(data.Post)
+		err := w.generalService.Delete(pstEx, id)
+		if err != nil {
+			rw.WriteHeader(http.StatusInternalServerError)
+			rw.Write([]byte(err.Error()))
 			return
 		}
-
-	} else {
+		rw.WriteHeader(http.StatusOK)
+		break
+	default:
 		rw.WriteHeader(http.StatusMethodNotAllowed)
-		return
+		break
 	}
 }
 
